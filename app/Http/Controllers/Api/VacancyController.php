@@ -25,7 +25,7 @@ class VacancyController extends Controller
         ]);
 
         $vacancy = Vacancy::create(array_merge($validated, [
-            'user_id' => 1, // temporary until auth added
+            'user_id' => $request->user()->id, // authenticated user
         ]));
 
         return response()->json($vacancy, 201);
@@ -38,12 +38,29 @@ class VacancyController extends Controller
 
     public function update(Request $request, Vacancy $vacancy)
     {
-        $vacancy->update($request->all());
+        if ($request->user()->id !== $vacancy->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'department' => 'nullable|string',
+            'description' => 'sometimes|required',
+            'requirements' => 'nullable|string',
+            'deadline' => 'sometimes|required|date',
+            'location' => 'nullable|string',
+        ]);
+
+        $vacancy->update($validated);
         return response()->json($vacancy);
     }
 
-    public function destroy(Vacancy $vacancy)
+    public function destroy(Request $request, Vacancy $vacancy)
     {
+        if ($request->user()->id !== $vacancy->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $vacancy->delete();
         return response()->json(['message' => 'Vacancy deleted']);
     }

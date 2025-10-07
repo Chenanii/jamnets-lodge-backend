@@ -23,7 +23,7 @@ class PostController extends Controller
         ]);
 
         $post = Post::create(array_merge($validated, [
-            'user_id' => 1, // temporary, replace with auth user later
+            'user_id' => $request->user()->id, // authenticated user
             'is_published' => true,
         ]));
 
@@ -37,12 +37,30 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
-        $post->update($request->all());
+        // Only allow the owner to update
+        if ($request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'content' => 'sometimes|required',
+            'category' => 'nullable|string',
+            'image' => 'nullable|string',
+            'is_published' => 'boolean',
+        ]);
+
+        $post->update($validated);
         return response()->json($post);
     }
 
-    public function destroy(Post $post)
+    public function destroy(Request $request, Post $post)
     {
+        // Only allow the owner to delete
+        if ($request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $post->delete();
         return response()->json(['message' => 'Post deleted']);
     }
