@@ -18,10 +18,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/vacancies/{vacancy}', [VacancyController::class, 'update']);
     Route::delete('/vacancies/{vacancy}', [VacancyController::class, 'destroy']);
     Route::get('/vacancy-applications', [VacancyApplicationController::class, 'index']);
-    
+    Route::get('/vacancy-applications/{vacancy}', [VacancyApplicationController::class, 'showByVacancy']);
+    Route::post('/vacancy-applications/evaluate/{application}', [VacancyApplicationController::class, 'evaluate']);
+    Route::get('/vacancy-applications/show/{application}', [VacancyApplicationController::class, 'show']);
+
+
+
 });
 
 // Public routes
+
+Route::get('/vacancy-applications/download-cv/{application}', [VacancyApplicationController::class, 'downloadCv']);
+Route::get('/vacancy-applications/view-cv/{application}', [VacancyApplicationController::class, 'viewCv']);
+
+
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::get('/vacancies', [VacancyController::class, 'index']);

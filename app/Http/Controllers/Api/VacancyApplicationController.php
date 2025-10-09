@@ -6,15 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\VacancyApplication;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Controllers\Api\VacancyApplicationController;
 use Illuminate\Support\Facades\Validator;
 
 
+
 class VacancyApplicationController extends Controller
-{   
+{
+    // Store a new application
     public function store(Request $request)
-    {   
-        // Validate request
+    {
         $request->validate([
             'vacancy_id' => 'required|exists:vacancies,id',
             'name' => 'required|string|max:255',
@@ -24,7 +24,6 @@ class VacancyApplicationController extends Controller
             'cv' => 'required|file|mimes:pdf,doc,docx|max:2048',
         ]);
 
-        
         $cvPath = $request->file('cv')->store('cvs', 'public');
 
         $application = VacancyApplication::create([
@@ -34,8 +33,7 @@ class VacancyApplicationController extends Controller
             'phone' => $request->phone,
             'cover_letter' => $request->cover_letter,
             'cv' => $cvPath,
-            'user_id' => optional($request->user())->id, 
-
+            'user_id' => optional($request->user())->id,
         ]);
 
         return response()->json([
@@ -44,6 +42,7 @@ class VacancyApplicationController extends Controller
         ], 201);
     }
 
+    // List all applications
     public function index()
     {
         $applications = VacancyApplication::with('vacancy')
@@ -53,4 +52,89 @@ class VacancyApplicationController extends Controller
         return response()->json($applications);
     }
 
+    // List applications for a specific vacancy
+    public function showByVacancy($vacancyId)
+    {
+        $applications = VacancyApplication::where('vacancy_id', $vacancyId)
+            ->with('vacancy')
+            ->latest()
+            ->get();
+
+        if ($applications->isEmpty()) {
+            return response()->json([
+                'message' => 'No applications found for this vacancy.'
+            ], 404);
+        }
+
+        return response()->json($applications);
+    }
+
+    // Download CV
+    public function downloadCv($applicationId)
+    {
+        $application = VacancyApplication::findOrFail($applicationId);
+
+        if (!Storage::disk('public')->exists($application->cv)) {
+            return response()->json([
+                'message' => 'CV file not found.'
+            ], 404);
+        }
+
+        return Storage::disk('public')->download($application->cv);
+    }
+
+    public function viewCv($applicationId)
+    {
+        $application = VacancyApplication::findOrFail($applicationId);
+
+        if (!Storage::disk('public')->exists($application->cv)) {
+            return response()->json([
+                'message' => 'CV file not found.'
+            ], 404);
+        }
+
+        $path = Storage::disk('public')->path($application->cv);
+        $mimeType = Storage::disk('public')->mimeType($application->cv);
+
+        return response()->file($path, [
+            'Content-Type' => $mimeType,
+        ]);
+    }
+
+    // Evaluate an application (admin)
+    public function evaluate(Request $request, $applicationId)
+    {
+        $application = VacancyApplication::findOrFail($applicationId);
+
+        dd($request->all());
+
+        $request->validate([
+            'status' => 'required|in:pending,shortlisted,accepted,rejected',
+            'comments' => 'nullable|string|max:1000',
+            'score' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $application->update([
+            'status' => $request->status,
+            'comments' => $request->comments,
+            'score' => $request->score,
+        ]);
+
+        return response()->json([
+            'message' => 'Application evaluated successfully.',
+            'application' => $application,
+        ]);
+    }
+
+    // Show a single application
+    public function show($id)
+    {
+        $application = VacancyApplication::find($id);
+
+        if (!$application) {
+            return response()->json(['message' => 'Application not found'], 404);
+        }
+
+        return response()->json($application);
+    }
 }
