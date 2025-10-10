@@ -17,11 +17,13 @@ class VacancyApplication extends Model
         'cover_letter',
         'cv',
         'user_id',
+        'status',
+        'comments',
+        'score',
     ];
 
     public function vacancy()
     {
         return $this->belongsTo(Vacancy::class);
     }
-
 }

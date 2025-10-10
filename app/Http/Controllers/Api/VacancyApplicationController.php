@@ -106,12 +106,10 @@ class VacancyApplicationController extends Controller
     {
         $application = VacancyApplication::findOrFail($applicationId);
 
-        dd($request->all());
-
         $request->validate([
             'status' => 'required|in:pending,shortlisted,accepted,rejected',
-            'comments' => 'nullable|string|max:1000',
-            'score' => 'nullable|numeric|min:0|max:100',
+            'comments' => 'required|string|max:1000',
+            'score' => 'nullable|numeric|min:0|max:5',
         ]);
 
         $application->update([
@@ -129,7 +127,7 @@ class VacancyApplicationController extends Controller
     // Show a single application
     public function show($id)
     {
-        $application = VacancyApplication::find($id);
+        $application = VacancyApplication::with('vacancy')->find($id);
 
         if (!$application) {
             return response()->json(['message' => 'Application not found'], 404);
@@ -137,4 +135,5 @@ class VacancyApplicationController extends Controller
 
         return response()->json($application);
     }
+
 }
