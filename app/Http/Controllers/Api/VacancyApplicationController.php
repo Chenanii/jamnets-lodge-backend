@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\VacancyApplication;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\ApplicationAcceptedMail;
+use Illuminate\Support\Facades\Mail;
 
 
 
@@ -17,7 +19,7 @@ class VacancyApplicationController extends Controller
     {
         $request->validate([
             'vacancy_id' => 'required|exists:vacancies,id',
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',           
             'email' => 'required|email',
             'phone' => 'required|string|max:20',
             'cover_letter' => 'required|string',
@@ -102,28 +104,43 @@ class VacancyApplicationController extends Controller
     }
 
     // Evaluate an application (admin)
-    public function evaluate(Request $request, $applicationId)
-    {
-        $application = VacancyApplication::findOrFail($applicationId);
 
-        $request->validate([
-            'status' => 'required|in:pending,shortlisted,accepted,rejected',
-            'comments' => 'required|string|max:1000',
-            'score' => 'nullable|numeric|min:0|max:5',
-        ]);
+public function evaluate(Request $request, $applicationId)
+{
+    $application = VacancyApplication::findOrFail($applicationId);
 
-        $application->update([
-            'status' => $request->status,
-            'comments' => $request->comments,
-            'score' => $request->score,
-        ]);
+    $request->validate([
+        'status' => 'required|in:pending,shortlisted,accepted,rejected',
+        'comments' => 'required|string|max:1000',
+        'score' => 'nullable|numeric|min:0|max:5',
+    ]);
 
-        return response()->json([
-            'message' => 'Application evaluated successfully.',
-            'application' => $application,
-        ]);
+    $application->update([
+        'status' => $request->status,
+        'comments' => $request->comments,
+        'score' => $request->score,
+    ]);
+
+    // 📨 Send email based on status
+    switch ($request->status) {
+        case 'accepted':
+            Mail::to($application->email)->send(new ApplicationAcceptedMail($application));
+            break;
+        case 'shortlisted':
+            Mail::to($application->email)->send(new ApplicationShortlistedMail($application));
+            break;
+        case 'rejected':
+            Mail::to($application->email)->send(new ApplicationRejectedMail($application));
+            break;
     }
 
+    return response()->json([
+        'message' => 'Application evaluated successfully and notification sent.',
+        'application' => $application,
+    ]);
+}
+
+    
     // Show a single application
     public function show($id)
     {

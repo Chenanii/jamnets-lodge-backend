@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\VacancyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\VacancyApplicationController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\UserController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -12,6 +14,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/posts', [PostController::class, 'store']);
     Route::put('/posts/{post}', [PostController::class, 'update']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
+    Route::get('/dashboard-stats', [DashboardController::class, 'getStats']);
+
+        // Users
+    Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
 
     // Vacancies
     Route::post('/vacancies', [VacancyController::class, 'store']);
@@ -27,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Public routes
+Route::post('/users/setup-account', [UserController::class, 'setupAccount']);
+Route::get('/create-account/{token}', [UserController::class, 'showSetupForm']);
 
 Route::get('/vacancy-applications/download-cv/{application}', [VacancyApplicationController::class, 'downloadCv']);
 Route::get('/vacancy-applications/view-cv/{application}', [VacancyApplicationController::class, 'viewCv']);
