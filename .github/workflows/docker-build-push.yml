@@ -44,7 +44,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_USERNAME }}/laravel-app
+          images: ${{ secrets.DOCKER_USERNAME }}/jamnets-lodge-backend
           tags: |
             latest
             ${{ github.ref_name }}
