@@ -13,17 +13,17 @@ use HasFactory;
 
 
 protected $fillable = [
-'type',
-'total_count',
-'alive_count',
-'sick_count',
-'dead_count',
-'recorded_at',
-'notes',
-];
+    'type',
+    'total_count',
+    'alive_count',
+    'sick_count',
+    'dead_count',
+    'recorded_at',
+    'notes',
+    ];
 
 
 protected $casts = [
-'recorded_at' => 'date',
-];
+    'recorded_at' => 'date',
+    ];
 }

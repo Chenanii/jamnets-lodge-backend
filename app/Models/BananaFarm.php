@@ -17,17 +17,17 @@ protected $table = 'banana_farms';
 
 
 protected $fillable = [
-'farm_name',
-'total_trees',
-'fruiting_trees',
-'sick_trees',
-'dead_trees',
-'recorded_at',
-'notes',
+    'farm_name',
+    'total_trees',
+    'fruiting_trees',
+    'sick_trees',
+    'dead_trees',
+    'recorded_at',
+    'notes',
 ];
 
 
 protected $casts = [
-'recorded_at' => 'date',
-];
+    'recorded_at' => 'date',
+    ];
 }
