@@ -47,7 +47,6 @@ class LivestockController extends Controller
     }
 
 
-    // --- Reporting endpoints ---
 
 
     // summary totals
@@ -65,7 +64,6 @@ class LivestockController extends Controller
     }
 
 
-    // monthly trends for the last N months (default 12)
     public function trends(Request $request)
     {
         $months = (int) $request->get('months', 12);
