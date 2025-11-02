@@ -7,6 +7,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\VacancyApplicationController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\LivestockController;
+use App\Http\Controllers\Api\BananaFarmController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -17,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard-stats', [DashboardController::class, 'getStats']);
 
-        // Users
+    // Users
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
@@ -34,10 +37,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vacancy-applications/show/{application}', [VacancyApplicationController::class, 'show']);
 
 
+    Route::apiResource('/rooms', RoomController::class);
+
+    // Livestock
+    Route::apiResource('livestocks', LivestockController::class);
+    Route::get('reports/livestocks/summary', [LivestockController::class, 'summary']);
+    Route::get('reports/livestocks/trends', [LivestockController::class, 'trends']);
+
+    // Banana Farms
+    Route::apiResource('banana-farms', BananaFarmController::class);
+    Route::get('reports/banana-farms/summary', [BananaFarmController::class, 'summary']);
+    Route::get('reports/banana-farms/trends', [BananaFarmController::class, 'trends']);
+
 
 });
 
 // Public routes
+Route::get('/rooms', [RoomController::class, 'index']);
+
 Route::post('/users/setup-account', [UserController::class, 'setupAccount']);
 Route::get('/create-account/{token}', [UserController::class, 'showSetupForm']);
 
